@@ -4,7 +4,7 @@
 __author__ = 'He Tao'
 
 '''
-CSDN blog spider
+CNBLOGS blog spider
 ================
 
 article.py
@@ -19,12 +19,12 @@ import os
 import scrapy
 from scrapy.selector import Selector
 
-from csdnspider.items import ArticleItem
+from cnblogs.items import ArticleItem
 
 class ArticleSpider(scrapy.Spider):
 
     name = 'article'  # csdn article spider
-    allowed_domains = ["blog.csdn.net"]
+    allowed_domains = ["www.cnblogs.com"]
 
     html_start = '''
 <!DOCTYPE html>
@@ -46,10 +46,8 @@ class ArticleSpider(scrapy.Spider):
 
     def parse(self, response):
         dirname = os.sep.join(['root'] + response.url.split('/')[2:-1])
-        filename = os.sep.join([dirname, response.url.split('/')[-1]])
-        article_text = Selector(response).xpath('//div[@id="article_details"]').extract()[0]
-        
-        article_text = article_text.replace('http://static.blog.csdn.net/css/blog_detail.css', '/static.blog.csdn.net/css/blog_detail.css')
+        filename = os.sep.join([dirname, response.url.split('/')[-1] + '.html'])
+        article_text = Selector(response).xpath('//div[@class="post"]').extract()[0]
 
         item = ArticleItem()
         item['image_urls'] = [x for x in Selector(text = article_text).xpath('//img/@src').extract()]

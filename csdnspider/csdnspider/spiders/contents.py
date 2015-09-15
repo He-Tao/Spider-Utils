@@ -7,10 +7,10 @@ __author__ = 'He Tao'
 CSDN blog spider
 ================
 
-article.py
+contents.py
 ----------
 
-Get the text of article and it's picture.
+Get the contents of specified tag.
 
 '''
 
