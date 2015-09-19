@@ -15,7 +15,9 @@ from scrapy.exceptions import DropItem
 class CSDNImagesPipeline(ImagesPipeline):
 
     def file_path(self, request, response = None, info = None):
-        return os.sep.join(request.url[7:].split('/'))
+        # handle such image(with watermark) url: 
+        #    http://img.blog.csdn.net/20140917165912117?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvaWFpdGk=/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast
+        return os.sep.join((lambda x: x if '?' not in x else x.split('?')[0]+'.png')(request.url)[7:].split('/'))
 
     def get_media_requests(self, item, info):
         for image_url in item['image_urls']:

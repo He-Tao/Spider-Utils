@@ -1,4 +1,4 @@
-#! /usr/bin/env python3
+#! /usr/bin/env python
 # -*- coding: utf-8 -*-
 
 __author__ = 'He Tao'
@@ -26,12 +26,15 @@ class ArticleSpider(scrapy.Spider):
     name = 'article'  # csdn article spider
     allowed_domains = ["www.cnblogs.com"]
 
-    html_start = '''
+    html_start_l = '''
 <!DOCTYPE html>
 <html>
 <head>
-    <meta charset="UTF-8">'
-    <title></title>
+    <meta charset="UTF-8">
+    <title>
+'''
+    html_start_r = '''
+</title>
 </head>
 <body>
 '''
@@ -41,16 +44,23 @@ class ArticleSpider(scrapy.Spider):
 '''
 
     start_urls = []
-    with open('root/cpp.content', 'r') as fp:
+    with open('root/cnblogs.cpp.content', 'r') as fp:
         start_urls = fp.read().split('\n')[:-1]
 
     def parse(self, response):
         dirname = os.sep.join(['root'] + response.url.split('/')[2:-1])
-        filename = os.sep.join([dirname, response.url.split('/')[-1] + '.html'])
+        filename = os.sep.join([dirname, response.url.split('/')[-1]])
         article_text = Selector(response).xpath('//div[@class="post"]').extract()[0]
 
+        parser = Selector(text = article_text)
+
+        article_title = parser.xpath('//a[@id="cb_post_title_url"]/text()').extract()[0]
+        title_link = parser.xpath('//a[@id="cb_post_title_url"]/@href').extract()[0]
+
+        article_text = article_text.replace(title_link, title_link[6:])
+
         item = ArticleItem()
-        item['image_urls'] = [x for x in Selector(text = article_text).xpath('//img/@src').extract()]
+        item['image_urls'] = [x for x in parser.xpath('//img/@src').extract()]
         item['image_names'] = [x.split('/')[-1] for x in item['image_urls']]
 
         # process image links.
@@ -60,6 +70,6 @@ class ArticleSpider(scrapy.Spider):
         if not os.path.exists(dirname):
             os.makedirs(dirname)
         with open(filename, 'wb') as fp:
-            fp.write(self.html_start + article_text.encode('utf-8', 'ignore') + self.html_end)
+            fp.write(self.html_start_l + article_title.encode('utf-8') + self.html_start_r + article_text.encode('utf-8', 'ignore') + self.html_end)
 
         return item

@@ -1,4 +1,4 @@
-#! /usr/bin/env python3
+#! /usr/bin/env python
 # -*- coding: utf-8 -*-
 
 __author__ = 'He Tao'
@@ -24,7 +24,7 @@ class ContentsSpider(scrapy.Spider):
 
     name = 'contents'  # csdn article spider
     allowed_domains = ["blog.csdn.net"]
-    
+
     tag = 'cpp'
 
     start_urls = ['http://blog.csdn.net/tag/details.html?tag=%s&page=%d' % (tag, p) for p in range(1, 31)]
@@ -33,7 +33,10 @@ class ContentsSpider(scrapy.Spider):
         print(response.url)
         links_data = Selector(response).xpath('//script[contains(., "var data = ")]/text()').extract()[0]
         l, r = links_data.find('{'), links_data.rfind('}')
-        article_links = [item['url'] for item in json.loads(links_data[l:(r+1)].encode('utf-8', 'ignore'))['result']]
-        with open('root/%s.content'%(self.tag), 'ab') as fp:
-            fp.write('\n'.join(article_links + ['']))
+        if l  == -1 or r == -1:
+            yield Request(response.url)  # failed, and retry!
+        else:
+            article_links = [item['url'] for item in json.loads(links_data[l:(r+1)].encode('utf-8', 'ignore'))['result']]
+            with open('root/csdn.%s.content'%(self.tag), 'ab') as fp:
+                fp.write('\n'.join(article_links + ['']))
 
