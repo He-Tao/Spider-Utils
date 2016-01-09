@@ -24,7 +24,7 @@ class ContentsSpider(scrapy.Spider):
 
     name = 'contents'  # csdn article spider
     allowed_domains = ["www.cnblogs.com"]
-    
+
     category = ['cpp']
 
     start_urls = ['http://www.cnblogs.com/cate/%s/%d' % (category[0], p) for p in range(1, 31)]
